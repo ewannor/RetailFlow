@@ -3,6 +3,7 @@ package com.retailflow;
 import com.retailflow.domain.Product;
 import com.retailflow.domain.RegularProduct;
 import com.retailflow.domain.PerishableProduct;
+import com.retailflow.inventory.Inventory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,55 +12,101 @@ public class Main {
 
     public static void main(String[] args) {
 
-        LocalDate saleDate = LocalDate.of(2026, 12, 4);
+        Inventory inventory = new Inventory();
 
-        Product rice = new RegularProduct(
-                "RF001",
-                "Rice",
-                new BigDecimal("120.00"),
-                20
-        );
+        //Create and add products
+        inventory.addProduct(new RegularProduct(
+                "RF001", "Rice",
+                new BigDecimal("120.00"), 20
+        ));
 
-        Product milk = new PerishableProduct(
-                "RF002",
-                "Fresh Milk",
-                new BigDecimal("18.50"),
-                10,
+        inventory.addProduct(new PerishableProduct(
+                "RF002", "Fresh Milk",
+                new BigDecimal("18.50"), 10,
                 LocalDate.of(2026, 12, 5)
+        ));
+
+        inventory.addProduct(new RegularProduct(
+                "RF003", "Soap",
+                new BigDecimal("12.00"), 35
+        ));
+
+        inventory.addProduct(new RegularProduct(
+                "RF004", "Sugar",
+                new BigDecimal("40.00"), 12
+        ));
+
+        System.out.println("=== RETAILFLOW: MILESTONE 3 ===");
+
+        //Display inventory count
+        System.out.println(
+                "Total products: " + inventory.getProductCount()
         );
 
-        Product[] products = {rice, milk};
-
-        System.out.println("=== RETAILFLOW: MILESTONE 2 ===");
-        System.out.println("Sale date: " + saleDate);
-
-        for (Product product : products) {
+        // Display all products
+        System.out.println("\nAll products:");
+        for (Product product : inventory.getAllProducts()) {
             System.out.println(
-                    product.getSku() + " | " +
-                            product.getName() + " | " +
-                            "GHS " + product.getPrice() + " | " +
-                            "Stock: " + product.getQuantity() + " | " +
-                            "Can sell 2? " + product.canSell(2, saleDate)
+                    product.getSku() + " - " + product.getName()
             );
         }
 
-        System.out.println(
-                "Milk after expiry: " + milk.canSell(2, saleDate.plusDays(2))
+        // Find a product using its SKU
+        System.out.println("\nSearch SKU rf002:");
+        inventory.findBySku("rf002").ifPresent(
+                product -> System.out.println(product.getName())
         );
 
+        // Search by product name
+        System.out.println("\nSearch by name 's':");
+        for (Product product : inventory.searchByName("s")) {
+            System.out.println(
+                    product.getSku() + " - " + product.getName()
+            );
+        }
+
+        // Sort by price
+        System.out.println("\nSorted by price:");
+        for (Product product : inventory.getProductsSortedByPrice()) {
+            System.out.println(
+                    product.getName() + " - GHS " + product.getPrice()
+            );
+        }
+
+        // Sort by name
+        System.out.println("\nSorted by name:");
+        for (Product product : inventory.getProductsSortedByName()) {
+            System.out.println(product.getName());
+        }
+
+        // Restock milk
+        inventory.restockProduct("RF002", 5);
+
+        Product milk = inventory.findBySku("RF002").orElseThrow();
+
         System.out.println(
-                "Rice: can sell 25 units? " + rice.canSell(25, saleDate)
+                "\nMilk stock after restocking: " + milk.getQuantity()
         );
 
-        rice.restock(5);
+        // Remove soap
+        boolean removed = inventory.removeProduct("RF003");
 
+        System.out.println("Removed RF003: " + removed);
         System.out.println(
-                "Rice stock after restocking: " + rice.getQuantity()
+                "Total products remaining: " + inventory.getProductCount()
         );
 
-        System.out.println(
-                "Rice: can sell 25 units after restocking? " +
-                        rice.canSell(25, saleDate)
-        );
+        // Verify that duplicate SKUs are rejected
+        try {
+            inventory.addProduct(new RegularProduct(
+                    "rf001", "Duplicate Rice",
+                    new BigDecimal("100.00"), 1
+            ));
+        } catch (IllegalArgumentException exception) {
+            System.out.println(
+                    "Duplicate rejected: " + exception.getMessage()
+            );
+        }
+
     }
 }
