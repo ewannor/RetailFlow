@@ -1,5 +1,7 @@
 package com.retailflow.domain;
 
+import com.retailflow.exception.ExpiredProductException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -37,5 +39,16 @@ public class PerishableProduct extends Product {
         boolean notExpired = !saleDate.isAfter(expiryDate);
 
         return enoughStock && notExpired;
+    }
+
+    @Override
+    protected void validateAdditionalSaleRules(LocalDate saleDate) {
+        if (saleDate.isAfter(expiryDate)) {
+            throw new ExpiredProductException(
+                    getSku(),
+                    expiryDate,
+                    saleDate
+            );
+        }
     }
 }
