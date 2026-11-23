@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import com.retailflow.ui.ConsoleMenu;
+import java.time.Clock;
+import java.util.Scanner;
 
 public class Main {
 
@@ -56,6 +59,18 @@ public class Main {
         }
 
         System.out.println("=== RETAILFLOW: MILESTONE 5 ===");
+
+        if (args.length == 0) {
+            ConsoleMenu menu = new ConsoleMenu(
+                    inventory,
+                    repository,
+                    new Scanner(System.in),
+                    System.out,
+                    Clock.systemDefaultZone()
+            );
+            menu.run();
+            return;
+        }
 
         // Run a demo sale only when requested
         if (args.length > 0

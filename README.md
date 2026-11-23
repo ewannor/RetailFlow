@@ -88,6 +88,64 @@ demo-sale
 
 After checkout, the updated inventory is saved.
 
+### Interactive Console Menu
+
+RetailFlow provides an interactive console interface.
+
+Run `com.retailflow.Main` without program arguments
+to open the main menu.
+
+Available operations:
+
+1. View all products
+2. Search by SKU or product name
+3. Add regular or perishable products
+4. Restock products
+5. Create and complete sales with optional discounts
+6. Sort products by price
+7. Exit
+
+Input is validated using the existing domain and
+business rules.
+
+Product additions, stock replenishments, and
+successful checkouts are saved to `data/store.json`.
+
+Discounts use the Strategy Pattern through
+DiscountStrategy and its implementations.
+
+### Demonstration Modes
+
+The previous program arguments remain supported:
+
+- `demo-sale`
+- `demo-sale discount10`
+
+The interactive menu is the default when no
+program arguments are provided.
+
+### Console Testing
+
+ConsoleMenuTest uses simulated input and an
+in-memory repository test double.
+
+Run the console tests:
+
+    mvn -Dtest=ConsoleMenuTest test
+
+Run all tests:
+
+    mvn clean test
+
+### Known Limitation
+
+The application saves inventory after successful
+business operations. A file-write failure can
+leave in-memory changes unsaved.
+
+Concurrent checkout and durable sales-history
+storage are not supported.
+
 ## Automated Testing
 
 Run all tests:
