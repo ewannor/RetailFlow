@@ -1,8 +1,9 @@
 package com.retailflow.domain;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
-public class Product {
+public abstract class Product {
 
     // sku - stock keeping unit
 
@@ -20,6 +21,9 @@ public class Product {
         }
         if (price == null || price.signum() <= 0) {
             throw new IllegalArgumentException("Price must be positive");
+        }
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Invalid quantity");
         }
         this.sku = sku;
         this.name = name;
@@ -48,4 +52,16 @@ public class Product {
         quantity = Math.addExact(quantity, amount);
     }
 
+    protected final boolean hasEnoughStock (int requestedQuantity) {
+        if (requestedQuantity <= 0) {
+            throw new IllegalArgumentException("Requested quantity must be positive");
+        }
+
+        return quantity >= requestedQuantity;
+    }
+
+    public abstract boolean canSell(
+            int requestedQuantity,
+            LocalDate saleDate
+    );
 }
