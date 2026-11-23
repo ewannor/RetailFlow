@@ -8,6 +8,7 @@ import com.retailflow.sales.Sale;
 import com.retailflow.sales.SaleItem;
 import com.retailflow.persistence.StoreRepository;
 import com.retailflow.persistence.JsonStoreRepository;
+import com.retailflow.sales.discount.PercentageDiscountStrategy;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -60,7 +61,27 @@ public class Main {
         if (args.length > 0
                 && args[0].equalsIgnoreCase("demo-sale")) {
 
-            Sale sale = new Sale(inventory, LocalDate.now());
+
+            LocalDate saleDate = LocalDate.now();
+
+            Sale sale;
+
+            if (args.length > 1
+                    && args[1].equalsIgnoreCase("discount10")) {
+
+                sale = new Sale(
+                        inventory,
+                        saleDate,
+                        new PercentageDiscountStrategy(
+                                new BigDecimal("10")
+                        )
+                );
+
+            } else {
+
+                sale = new Sale(inventory, saleDate);
+            }
+
 
             sale.addItem("RF001", 2);
             sale.addItem("RF002", 3);
@@ -83,8 +104,17 @@ public class Main {
                 }
 
                 System.out.println(
-                        "Sale total: GHS " + sale.getTotal()
+                        "Subtotal: GHS " + sale.getSubtotal()
                 );
+
+                System.out.println(
+                        "Discount: GHS " + sale.getDiscountAmount()
+                );
+
+                System.out.println(
+                        "Amount payable: GHS " + sale.getTotal()
+                );
+
 
                 System.out.println(
                         "Updated inventory saved to JSON."

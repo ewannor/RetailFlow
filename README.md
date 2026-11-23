@@ -120,6 +120,47 @@ Jackson and local JSON file storage.
 
 The design separates business logic from storage logic.
 
+
+### Strategy Pattern — Discount Calculation
+
+RetailFlow uses the Strategy Pattern to support
+interchangeable discount policies.
+
+Participants:
+- DiscountStrategy: common discount interface
+- NoDiscountStrategy: calculates no discount
+- PercentageDiscountStrategy: applies a percentage
+- Sale: context class that uses the selected strategy
+
+The Sale class depends on the DiscountStrategy interface
+rather than implementing individual discount algorithms.
+
+By default, sales use NoDiscountStrategy to preserve
+their original behavior.
+
+A percentage-based strategy can be supplied through
+the Sale constructor.
+
+This design supports the Open/Closed Principle because
+new discount policies can be added without modifying
+the existing Sale calculation logic.
+
+The strategy affects the amount payable, not the
+quantity deducted from inventory.
+
+To demonstrate the two options in IntelliJ IDEA:
+
+Normal checkout:
+demo-sale
+
+Checkout with 10% discount:
+demo-sale discount10
+
+Discounted sales are not yet stored as permanent
+transaction records. JSON persistence currently
+stores the updated inventory.
+
+
 ## OOP Concepts
 
 - Classes and objects

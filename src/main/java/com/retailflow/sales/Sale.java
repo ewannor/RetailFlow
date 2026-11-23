@@ -3,6 +3,8 @@ package com.retailflow.sales;
 
 import com.retailflow.domain.Product;
 import com.retailflow.inventory.Inventory;
+import com.retailflow.sales.discount.DiscountStrategy;
+import com.retailflow.sales.discount.NoDiscountStrategy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,10 +17,22 @@ public class Sale {
     private final LocalDate saleDate;
     private final List<SaleItem> items = new ArrayList<>();
 
+    // NEW: Interchangeable discount policy
+    private final DiscountStrategy discountStrategy;
+
     private boolean checkedOut;
 
+    // Existing constructor: preserves no-discount behavior
     public Sale(Inventory inventory, LocalDate saleDate) {
+        this(inventory, saleDate, new NoDiscountStrategy());
+    }
 
+    // NEW: Constructor with a discount strategy
+    public Sale(
+            Inventory inventory,
+            LocalDate saleDate,
+            DiscountStrategy discountStrategy
+    ) {
         if (inventory == null) {
             throw new IllegalArgumentException(
                     "Inventory is required"
@@ -31,8 +45,15 @@ public class Sale {
             );
         }
 
+        if (discountStrategy == null) {
+            throw new IllegalArgumentException(
+                    "Discount strategy is required"
+            );
+        }
+
         this.inventory = inventory;
         this.saleDate = saleDate;
+        this.discountStrategy = discountStrategy;
     }
 
     // 1. Add a product to the sale
@@ -77,19 +98,45 @@ public class Sale {
         return checkedOut;
     }
 
-    // 3. Calculate the total amount
-    public BigDecimal getTotal() {
+    // 3. Calculate the subtotal before discounts
+    public BigDecimal getSubtotal() {
 
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal subtotal = BigDecimal.ZERO;
 
         for (SaleItem item : items) {
-            total = total.add(item.getLineTotal());
+            subtotal = subtotal.add(item.getLineTotal());
         }
 
-        return total;
+        return subtotal;
     }
 
-    // 4. Validate and complete the checkout
+    // 4. Calculate the discount using the selected strategy
+    public BigDecimal getDiscountAmount() {
+
+        BigDecimal subtotal = getSubtotal();
+
+        BigDecimal discount =
+                discountStrategy.calculateDiscount(subtotal);
+
+        if (discount == null
+                || discount.signum() < 0
+                || discount.compareTo(subtotal) > 0) {
+
+            throw new IllegalStateException(
+                    "Discount strategy returned an invalid amount"
+            );
+        }
+
+        return discount;
+    }
+
+    // 5. Calculate the final amount payable
+    public BigDecimal getTotal() {
+
+        return getSubtotal().subtract(getDiscountAmount());
+    }
+
+    // 6. Validate and complete checkout
     public void checkout() {
 
         ensureNotCheckedOut();
@@ -119,11 +166,15 @@ public class Sale {
                 );
             }
 
+            // Preserves domain-specific exceptions
             current.validateSale(
                     item.getQuantity(),
                     saleDate
             );
         }
+
+        // Validate discount before reducing any stock
+        getDiscountAmount();
 
         // Second pass: deduct stock after validation
         for (SaleItem item : items) {
@@ -136,7 +187,7 @@ public class Sale {
         checkedOut = true;
     }
 
-    // 5. Prevent changes after checkout
+    // 7. Prevent changes after checkout
     private void ensureNotCheckedOut() {
         if (checkedOut) {
             throw new IllegalStateException(
