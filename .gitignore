@@ -22,7 +22,10 @@ target/
 .env.*
 
 ### Local Application Data ###
-data/
+/data/
+
+### Maven output ###
+/target/
 
 ### Eclipse ###
 .apt_generated

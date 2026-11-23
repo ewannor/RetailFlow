@@ -6,131 +6,109 @@ import com.retailflow.domain.PerishableProduct;
 import com.retailflow.inventory.Inventory;
 import com.retailflow.sales.Sale;
 import com.retailflow.sales.SaleItem;
+import com.retailflow.persistence.StoreRepository;
+import com.retailflow.persistence.JsonStoreRepository;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        Inventory inventory = new Inventory();
+        Path dataFile = Path.of("data", "store.json");
+        StoreRepository repository =
+                new JsonStoreRepository(dataFile);
 
-        //Create and add products
-        inventory.addProduct(new RegularProduct(
-                "RF001", "Rice",
-                new BigDecimal("120.00"), 20
-        ));
+        boolean firstRun = Files.notExists(dataFile);
 
-        inventory.addProduct(new PerishableProduct(
-                "RF002", "Fresh Milk",
-                new BigDecimal("18.50"), 10,
-                LocalDate.of(2026, 12, 5)
-        ));
+        Inventory inventory = repository.load();
 
-        inventory.addProduct(new RegularProduct(
-                "RF003", "Soap",
-                new BigDecimal("12.00"), 35
-        ));
+        if (firstRun) {
+            inventory.addProduct(new RegularProduct(
+                    "RF001",
+                    "Rice",
+                    new BigDecimal("120.00"),
+                    20
+            ));
+            inventory.addProduct(new PerishableProduct(
+                    "RF002",
+                    "Fresh Milk",
+                    new BigDecimal("18.50"),
+                    10,
+                    LocalDate.now().plusDays(30)
+            ));
+            inventory.addProduct(new RegularProduct(
+                    "RF003",
+                    "Soap",
+                    new BigDecimal("12.00"),
+                    35
+            ));
+            repository.save(inventory);
 
-        // 2. Create a sale
-        LocalDate saleDate = LocalDate.of(2026, 12, 4);
-
-        Sale sale = new Sale(inventory, saleDate);
-
-        // 3. Add items to the sale
-        sale.addItem("RF001", 2);
-        sale.addItem("rf002", 3);
-        sale.addItem("RF003", 1);
-
-        // 4. Display sale details
-
-        System.out.println("=== RETAILFLOW: MILESTONE 4 ===");
-        System.out.println("Sale date: " + sale.getSaleDate());
-        System.out.println("Items: ");
-
-        for (SaleItem item : sale.getItems()) {
-            System.out.println(
-                    item.getSku() + " | " +
-                            item.getProductName() + " | " +
-                            item.getQuantity() + " x GHS " +
-                            item.getUnitPrice() + " = GHS " +
-                            item.getLineTotal()
-            );
+            System.out.println("Created starter inventory and saved JSON.");
+        } else {
+            System.out.println("Loaded inventory from JSON.");
         }
 
-        System.out.println("Total: GHS " + sale.getTotal());
+        System.out.println("=== RETAILFLOW: MILESTONE 5 ===");
 
-        // 5. Complete checkout
-        sale.checkout();
+        // Run a demo sale only when requested
+        if (args.length > 0
+                && args[0].equalsIgnoreCase("demo-sale")) {
 
-        System.out.println(
-                "Checkout successful: " + sale.isCheckedOut()
-        );
+            Sale sale = new Sale(inventory, LocalDate.now());
 
-        // 6. Show remaining inventory quantities
-        for (String sku : new String[]{"RF001", "RF002", "RF003"}) {
+            sale.addItem("RF001", 2);
+            sale.addItem("RF002", 3);
+            sale.addItem("RF003", 1);
 
-            Product product = inventory.findBySku(sku)
-                    .orElseThrow();
+            try {
+                sale.checkout();
 
-            System.out.println(
-                    product.getName() +
-                            " stock remaining: " + product.getQuantity()
-            );
+                // Save stock after checkout
+                repository.save(inventory);
+
+                System.out.println("Checkout successful.");
+
+                for (SaleItem item : sale.getItems()) {
+                    System.out.println(
+                            item.getProductName()
+                                    + " x " + item.getQuantity()
+                                    + " = GHS " + item.getLineTotal()
+                    );
+                }
+
+                System.out.println(
+                        "Sale total: GHS " + sale.getTotal()
+                );
+
+                System.out.println(
+                        "Updated inventory saved to JSON."
+                );
+
+            } catch (IllegalStateException error) {
+
+                System.out.println(
+                        "Checkout rejected: " + error.getMessage()
+                );
+            }
         }
 
-        // 7. Try to sell expired milk
-        Sale expiredSale = new Sale(
-                inventory,
-                LocalDate.of(2026, 12, 6)
-        );
+        // Display the current stock
+        System.out.println("Current inventory:");
 
-        expiredSale.addItem("RF002", 1);
+        for (Product product : inventory.getAllProducts()) {
 
-        try {
-            expiredSale.checkout();
-        } catch (IllegalStateException e) {
             System.out.println(
-                    "Expired sale rejected: " + e.getMessage()
+                    product.getSku()
+                            + " | " + product.getName()
+                            + " | GHS " + product.getPrice()
+                            + " | Stock: " + product.getQuantity()
             );
         }
-
-        // 8. Test insufficient stock without partial deduction
-        Sale insufficientSale = new Sale(inventory, saleDate);
-
-        insufficientSale.addItem("RF001", 1);
-        insufficientSale.addItem("RF002", 8);
-
-        try {
-            insufficientSale.checkout();
-        } catch (IllegalStateException e) {
-            System.out.println(
-                    "Insufficient-stock sale rejected: "
-                            + e.getMessage()
-            );
-        }
-
-        System.out.println(
-                "Rice stock after rejected sale: " +
-                        inventory.findBySku("RF001")
-                                .orElseThrow().getQuantity()
-        );
-
-        System.out.println(
-                "Milk stock after rejected sales: " +
-                        inventory.findBySku("RF002")
-                                .orElseThrow().getQuantity()
-        );
-
-        // 9. Prevent a completed sale from being checked out twice
-        try {
-            sale.checkout();
-        } catch (IllegalStateException e) {
-            System.out.println(
-                    "Repeat checkout rejected: " + e.getMessage()
-            );
-        }
-
     }
 }
