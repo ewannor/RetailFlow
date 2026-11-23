@@ -4,6 +4,8 @@ import com.retailflow.domain.Product;
 import com.retailflow.domain.RegularProduct;
 import com.retailflow.domain.PerishableProduct;
 import com.retailflow.inventory.Inventory;
+import com.retailflow.sales.Sale;
+import com.retailflow.sales.SaleItem;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,80 +33,102 @@ public class Main {
                 new BigDecimal("12.00"), 35
         ));
 
-        inventory.addProduct(new RegularProduct(
-                "RF004", "Sugar",
-                new BigDecimal("40.00"), 12
-        ));
+        // 2. Create a sale
+        LocalDate saleDate = LocalDate.of(2026, 12, 4);
 
-        System.out.println("=== RETAILFLOW: MILESTONE 3 ===");
+        Sale sale = new Sale(inventory, saleDate);
 
-        //Display inventory count
-        System.out.println(
-                "Total products: " + inventory.getProductCount()
-        );
+        // 3. Add items to the sale
+        sale.addItem("RF001", 2);
+        sale.addItem("rf002", 3);
+        sale.addItem("RF003", 1);
 
-        // Display all products
-        System.out.println("\nAll products:");
-        for (Product product : inventory.getAllProducts()) {
+        // 4. Display sale details
+
+        System.out.println("=== RETAILFLOW: MILESTONE 4 ===");
+        System.out.println("Sale date: " + sale.getSaleDate());
+        System.out.println("Items: ");
+
+        for (SaleItem item : sale.getItems()) {
             System.out.println(
-                    product.getSku() + " - " + product.getName()
+                    item.getSku() + " | " +
+                            item.getProductName() + " | " +
+                            item.getQuantity() + " x GHS " +
+                            item.getUnitPrice() + " = GHS " +
+                            item.getLineTotal()
             );
         }
 
-        // Find a product using its SKU
-        System.out.println("\nSearch SKU rf002:");
-        inventory.findBySku("rf002").ifPresent(
-                product -> System.out.println(product.getName())
+        System.out.println("Total: GHS " + sale.getTotal());
+
+        // 5. Complete checkout
+        sale.checkout();
+
+        System.out.println(
+                "Checkout successful: " + sale.isCheckedOut()
         );
 
-        // Search by product name
-        System.out.println("\nSearch by name 's':");
-        for (Product product : inventory.searchByName("s")) {
+        // 6. Show remaining inventory quantities
+        for (String sku : new String[]{"RF001", "RF002", "RF003"}) {
+
+            Product product = inventory.findBySku(sku)
+                    .orElseThrow();
+
             System.out.println(
-                    product.getSku() + " - " + product.getName()
+                    product.getName() +
+                            " stock remaining: " + product.getQuantity()
             );
         }
 
-        // Sort by price
-        System.out.println("\nSorted by price:");
-        for (Product product : inventory.getProductsSortedByPrice()) {
-            System.out.println(
-                    product.getName() + " - GHS " + product.getPrice()
-            );
-        }
-
-        // Sort by name
-        System.out.println("\nSorted by name:");
-        for (Product product : inventory.getProductsSortedByName()) {
-            System.out.println(product.getName());
-        }
-
-        // Restock milk
-        inventory.restockProduct("RF002", 5);
-
-        Product milk = inventory.findBySku("RF002").orElseThrow();
-
-        System.out.println(
-                "\nMilk stock after restocking: " + milk.getQuantity()
+        // 7. Try to sell expired milk
+        Sale expiredSale = new Sale(
+                inventory,
+                LocalDate.of(2026, 12, 6)
         );
 
-        // Remove soap
-        boolean removed = inventory.removeProduct("RF003");
+        expiredSale.addItem("RF002", 1);
 
-        System.out.println("Removed RF003: " + removed);
-        System.out.println(
-                "Total products remaining: " + inventory.getProductCount()
-        );
-
-        // Verify that duplicate SKUs are rejected
         try {
-            inventory.addProduct(new RegularProduct(
-                    "rf001", "Duplicate Rice",
-                    new BigDecimal("100.00"), 1
-            ));
-        } catch (IllegalArgumentException exception) {
+            expiredSale.checkout();
+        } catch (IllegalStateException e) {
             System.out.println(
-                    "Duplicate rejected: " + exception.getMessage()
+                    "Expired sale rejected: " + e.getMessage()
+            );
+        }
+
+        // 8. Test insufficient stock without partial deduction
+        Sale insufficientSale = new Sale(inventory, saleDate);
+
+        insufficientSale.addItem("RF001", 1);
+        insufficientSale.addItem("RF002", 8);
+
+        try {
+            insufficientSale.checkout();
+        } catch (IllegalStateException e) {
+            System.out.println(
+                    "Insufficient-stock sale rejected: "
+                            + e.getMessage()
+            );
+        }
+
+        System.out.println(
+                "Rice stock after rejected sale: " +
+                        inventory.findBySku("RF001")
+                                .orElseThrow().getQuantity()
+        );
+
+        System.out.println(
+                "Milk stock after rejected sales: " +
+                        inventory.findBySku("RF002")
+                                .orElseThrow().getQuantity()
+        );
+
+        // 9. Prevent a completed sale from being checked out twice
+        try {
+            sale.checkout();
+        } catch (IllegalStateException e) {
+            System.out.println(
+                    "Repeat checkout rejected: " + e.getMessage()
             );
         }
 

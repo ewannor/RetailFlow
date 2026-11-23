@@ -31,9 +31,7 @@ public abstract class Product {
         this.quantity = quantity;
     }
 
-    public String getSku() {
-        return sku;
-    }
+    public String getSku() {return sku;}
     public String getName() {
         return name;
     }
@@ -64,4 +62,25 @@ public abstract class Product {
             int requestedQuantity,
             LocalDate saleDate
     );
+
+    // Implement: Deduct stock after validating sale eligiblity
+    public final void sell(int requestedQuantity, LocalDate saleDate) {
+        if (requestedQuantity <= 0) {
+            throw new IllegalArgumentException(
+                    "Requested quantity must be positive"
+            );
+        }
+
+        if (saleDate == null) {
+            throw new IllegalArgumentException("Sale date is required");
+        }
+
+        if (!canSell(requestedQuantity, saleDate)) {
+            throw new IllegalStateException(
+                    "Product cannot be sold: " + sku
+            );
+        }
+
+        quantity -= requestedQuantity;
+    }
 }
