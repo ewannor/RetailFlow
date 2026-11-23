@@ -51,7 +51,6 @@ public class Main {
                 "Rice: can sell 25 units? " + rice.canSell(25, saleDate)
         );
 
-
         rice.restock(5);
 
         System.out.println(
