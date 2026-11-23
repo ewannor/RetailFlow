@@ -119,12 +119,10 @@ public class Sale {
                 );
             }
 
-            if (!current.canSell(item.getQuantity(), saleDate)) {
-                throw new IllegalStateException(
-                        "Cannot sell " + item.getSku()
-                                + " on " + saleDate
-                );
-            }
+            current.validateSale(
+                    item.getQuantity(),
+                    saleDate
+            );
         }
 
         // Second pass: deduct stock after validation
