@@ -137,7 +137,19 @@ public class Sale {
     }
 
     // 6. Validate and complete checkout
+    /**
+     * Completes the sale after validating all selected products.
+     *
+     * Checkout uses two passes:
+     * 1. Verify stock availability, expiry dates, and discount.
+     * 2. Deduct stock only after all validations succeed.
+     *
+     * This prevents a failed validation on a later item
+     * from causing partial stock deduction.
+     */
+
     public void checkout() {
+        // Keep the existing implementation unchanged.
 
         ensureNotCheckedOut();
 

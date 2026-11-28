@@ -5,7 +5,17 @@ import com.retailflow.exception.InsufficientStockException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Abstract representation of a product in RetailFlow.
+ *
+ * Encapsulates common product information and stock
+ * management operations.
+ *
+ * Concrete subclasses provide their own sale eligibility
+ * rules through the canSell() method.
+ */
 public abstract class Product {
+    // Existing fields and methods remain here.
 
     private final String sku;
     private final String name;
@@ -103,6 +113,12 @@ public abstract class Product {
     }
 
     // Subclasses may override this method
+    /**
+     * Extension point for product-specific validation.
+     *
+     * PerishableProduct overrides this method to reject
+     * sales occurring after the product's expiry date.
+     */
     protected void validateAdditionalSaleRules(
             LocalDate saleDate
     ) {

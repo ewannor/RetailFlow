@@ -21,6 +21,16 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+/**
+ * Provides the interactive console interface for RetailFlow.
+ *
+ * Handles user input and displays results while delegating
+ * business operations to Inventory and Sale.
+ *
+ * The repository is responsible for data persistence.
+ * Scanner, PrintStream, and Clock are injected to support
+ * automated testing.
+ */
 public final class ConsoleMenu {
 
     private final Inventory inventory;

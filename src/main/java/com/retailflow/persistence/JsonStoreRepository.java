@@ -19,6 +19,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 
+/**
+ * JSON-based implementation of StoreRepository.
+ *
+ * Uses Jackson to save and restore inventory data.
+ * Separates file persistence from the application's
+ * product, inventory, and sales business logic.
+ */
 public final class JsonStoreRepository implements StoreRepository {
 
     private static final int FORMAT_VERSION = 1;
@@ -35,6 +42,9 @@ public final class JsonStoreRepository implements StoreRepository {
         this.mapper = new ObjectMapper();
     }
 
+    // Write JSON to a temporary file before replacing the
+    // existing store file. This reduces the risk of leaving
+    // a partially written JSON file if writing fails.
     @Override
     public void save(Inventory inventory) throws IOException {
 
