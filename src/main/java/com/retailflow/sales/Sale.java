@@ -149,7 +149,6 @@ public class Sale {
      */
 
     public void checkout() {
-        // Keep the existing implementation unchanged.
 
         ensureNotCheckedOut();
 

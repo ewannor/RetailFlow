@@ -44,7 +44,7 @@ Check `../target/surefire-reports` if Maven reports failures.
 
 ## Evidence log
 
-- Verification Date: _27 November 2027_
+- Verification Date: _27 November 2026_
 - Java version: _Java 26.0.2.1_
 - Git commit SHA: _6772d2d3a37e87adc90a27688f1ccf989c5e8a3c_
 - `mvn clean test`: _BUILD SUCCESS - 41 tests run, Failures: 0, Errors: 0, Skipped: 0_

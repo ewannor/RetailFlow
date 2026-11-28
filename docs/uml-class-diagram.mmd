@@ -34,9 +34,11 @@ classDiagram
         +sell(int quantity, LocalDate date) void
         #validateAdditionalSaleRules(LocalDate date) void
     }
+
     class RegularProduct {
         +canSell(int quantity, LocalDate date) boolean
     }
+
     class PerishableProduct {
         -LocalDate expiryDate
         +getExpiryDate() LocalDate
@@ -88,9 +90,11 @@ classDiagram
         <<interface>>
         +calculateDiscount(BigDecimal subtotal) BigDecimal
     }
+
     class NoDiscountStrategy {
         +calculateDiscount(BigDecimal subtotal) BigDecimal
     }
+
     class PercentageDiscountStrategy {
         -BigDecimal percentage
         +getPercentage() BigDecimal
@@ -102,11 +106,16 @@ classDiagram
         +load() Inventory
         +save(Inventory inventory) void
     }
+
     class JsonStoreRepository {
         -Path file
         -ObjectMapper mapper
         +load() Inventory
         +save(Inventory inventory) void
+    }
+
+    class IllegalStateException {
+
     }
 
     class InsufficientStockException {
@@ -117,6 +126,7 @@ classDiagram
         +getRequestedQuantity() int
         +getAvailableQuantity() int
     }
+
     class ExpiredProductException {
         -String sku
         -LocalDate expiryDate
@@ -126,24 +136,38 @@ classDiagram
         +getSaleDate() LocalDate
     }
 
+%% Inheritance
     Product <|-- RegularProduct
     Product <|-- PerishableProduct
-    Inventory "1" o-- "0..*" Product : manages
-    Sale "1" *-- "0..*" SaleItem : contains
-    Sale "0..*" --> "1" Inventory : checks
-    SaleItem "0..*" --> "1" Product : references
 
-    DiscountStrategy <|.. NoDiscountStrategy
-    DiscountStrategy <|.. PercentageDiscountStrategy
-    Sale "0..*" --> "1" DiscountStrategy : uses
+%% Aggregation and composition
+Inventory "1" -- "0..*" Product : manages
+Sale "1" *-- "0..*" SaleItem : contains
 
-    StoreRepository <|.. JsonStoreRepository
-    JsonStoreRepository ..> Inventory : reads and writes
-    ConsoleMenu --> Inventory : uses
-    ConsoleMenu --> StoreRepository : saves
-    ConsoleMenu ..> Sale : creates
-    Main ..> ConsoleMenu : starts
-    Main ..> JsonStoreRepository : constructs
+%% Associations
+Sale "0..*" --> "1" Inventory : checks
+SaleItem "0..*" --> "1" Product : references
 
-    Product ..> InsufficientStockException : throws
-    PerishableProduct ..> ExpiredProductException : throws
+%% Strategy Pattern
+DiscountStrategy <|.. NoDiscountStrategy
+DiscountStrategy <|.. PercentageDiscountStrategy
+Sale "0..*" --> "1" DiscountStrategy : uses
+
+%% Repository Pattern
+StoreRepository <|.. JsonStoreRepository
+JsonStoreRepository ..> Inventory : reads and writes
+
+%% Console and application dependencies
+ConsoleMenu --> Inventory : uses
+ConsoleMenu --> StoreRepository : saves
+ConsoleMenu ..> Sale : creates
+Main ..> ConsoleMenu : starts
+Main ..> JsonStoreRepository : constructs
+
+%% Custom exception inheritance
+IllegalStateException <|-- InsufficientStockException
+IllegalStateException <|-- ExpiredProductException
+
+%% Exception dependencies
+Product ..> InsufficientStockException : throws
+PerishableProduct ..> ExpiredProductException : throws

@@ -349,4 +349,4 @@ See the [LICENSE](LICENSE) file for the applicable terms and conditions.
 
 Project releases and release notes are available through the [GitHub Releases page](https://github.com/ewannor/RetailFlow/releases).
 
-This initial release is `v1.0.0`.
+This initial planned release is `v1.0.0`.

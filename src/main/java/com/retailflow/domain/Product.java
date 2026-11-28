@@ -15,7 +15,6 @@ import java.time.LocalDate;
  * rules through the canSell() method.
  */
 public abstract class Product {
-    // Existing fields and methods remain here.
 
     private final String sku;
     private final String name;

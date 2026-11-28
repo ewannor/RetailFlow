@@ -124,7 +124,7 @@ classDiagram
     }
 
     class IllegalStateException {
-<<Java standard library>>
+
 }
 
 class InsufficientStockException {
@@ -150,7 +150,7 @@ Product <|-- RegularProduct
 Product <|-- PerishableProduct
 
 %% Aggregation and composition
-Inventory "1" o-- "0..*" Product : manages
+Inventory "1" -- "0..*" Product : manages
 Sale "1" *-- "0..*" SaleItem : contains
 
 %% Associations
