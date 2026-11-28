@@ -1,8 +1,10 @@
 # RetailFlow — UML Class Diagram
 
-**Source:** `feature/submission-prep` (verified 24 November 2026). This diagram reflects the main production classes in `src/main/java/com/retailflow` and excludes JUnit test classes and library internals.
+This UML class diagram illustrates the main classes, attributes, methods, and relationships within the RetailFlow application. 
 
-The diagram below is **viewable directly on GitHub** and the matching `.mmd` file is editable Mermaid source.
+It demonstrates inheritance, abstraction, composition, aggregation, associations, and the Strategy and Repository design patterns.
+
+The diagram focuses on the application's production classes and excludes automated test classes and external library implementations.
 
 ```mermaid
 classDiagram
@@ -41,9 +43,11 @@ classDiagram
         +sell(int quantity, LocalDate date) void
         #validateAdditionalSaleRules(LocalDate date) void
     }
+
     class RegularProduct {
         +canSell(int quantity, LocalDate date) boolean
     }
+
     class PerishableProduct {
         -LocalDate expiryDate
         +getExpiryDate() LocalDate
@@ -95,9 +99,11 @@ classDiagram
         <<interface>>
         +calculateDiscount(BigDecimal subtotal) BigDecimal
     }
+
     class NoDiscountStrategy {
         +calculateDiscount(BigDecimal subtotal) BigDecimal
     }
+
     class PercentageDiscountStrategy {
         -BigDecimal percentage
         +getPercentage() BigDecimal
@@ -109,6 +115,7 @@ classDiagram
         +load() Inventory
         +save(Inventory inventory) void
     }
+
     class JsonStoreRepository {
         -Path file
         -ObjectMapper mapper
@@ -116,44 +123,63 @@ classDiagram
         +save(Inventory inventory) void
     }
 
-    class InsufficientStockException {
-        -String sku
-        -int requestedQuantity
-        -int availableQuantity
-        +getSku() String
-        +getRequestedQuantity() int
-        +getAvailableQuantity() int
-    }
-    class ExpiredProductException {
-        -String sku
-        -LocalDate expiryDate
-        -LocalDate saleDate
-        +getSku() String
-        +getExpiryDate() LocalDate
-        +getSaleDate() LocalDate
+    class IllegalStateException {
+<<Java standard library>>
+}
+
+class InsufficientStockException {
+-String sku
+-int requestedQuantity
+-int availableQuantity
++getSku() String
++getRequestedQuantity() int
++getAvailableQuantity() int
     }
 
-    Product <|-- RegularProduct
-    Product <|-- PerishableProduct
-    Inventory "1" o-- "0..*" Product : manages
-    Sale "1" *-- "0..*" SaleItem : contains
-    Sale "0..*" --> "1" Inventory : checks
-    SaleItem "0..*" --> "1" Product : references
+class ExpiredProductException {
+-String sku
+-LocalDate expiryDate
+-LocalDate saleDate
++getSku() String
++getExpiryDate() LocalDate
++getSaleDate() LocalDate
+    }
 
-    DiscountStrategy <|.. NoDiscountStrategy
-    DiscountStrategy <|.. PercentageDiscountStrategy
-    Sale "0..*" --> "1" DiscountStrategy : uses
+%% Inheritance
+Product <|-- RegularProduct
+Product <|-- PerishableProduct
 
-    StoreRepository <|.. JsonStoreRepository
-    JsonStoreRepository ..> Inventory : reads and writes
-    ConsoleMenu --> Inventory : uses
-    ConsoleMenu --> StoreRepository : saves
-    ConsoleMenu ..> Sale : creates
-    Main ..> ConsoleMenu : starts
-    Main ..> JsonStoreRepository : constructs
+%% Aggregation and composition
+Inventory "1" o-- "0..*" Product : manages
+Sale "1" *-- "0..*" SaleItem : contains
 
-    Product ..> InsufficientStockException : throws
-    PerishableProduct ..> ExpiredProductException : throws
+%% Associations
+Sale "0..*" --> "1" Inventory : checks
+SaleItem "0..*" --> "1" Product : references
+
+%% Strategy Pattern
+DiscountStrategy <|.. NoDiscountStrategy
+DiscountStrategy <|.. PercentageDiscountStrategy
+Sale "0..*" --> "1" DiscountStrategy : uses
+
+%% Repository Pattern
+StoreRepository <|.. JsonStoreRepository
+JsonStoreRepository ..> Inventory : reads and writes
+
+%% Console and application dependencies
+ConsoleMenu --> Inventory : uses
+ConsoleMenu --> StoreRepository : saves
+ConsoleMenu ..> Sale : creates
+Main ..> ConsoleMenu : starts
+Main ..> JsonStoreRepository : constructs
+
+%% Custom exception inheritance
+IllegalStateException <|-- InsufficientStockException
+IllegalStateException <|-- ExpiredProductException
+
+%% Exception dependencies
+Product ..> InsufficientStockException : throws
+PerishableProduct ..> ExpiredProductException : throws
 ```
 
 ## Relationships and multiplicities
@@ -170,5 +196,6 @@ classDiagram
 | `JsonStoreRepository` ⇢ `StoreRepository` | Interface realization (Repository abstraction). |
 | `ConsoleMenu` → `Inventory` / `StoreRepository` | Console delegates to existing business and storage objects. |
 | `Product` / `PerishableProduct` ⇢ custom exceptions | Dependencies: methods throw specific exceptions on stock or expiry violations. |
+| `IllegalStateException` → Custom Exceptions | Inheritance: `InsufficientStockException` and `ExpiredProductException` extend Java's `IllegalStateException`, allowing specific domain errors to remain compatible with general illegal-state exception handling. |
 
-Notes: The UML focuses on important operations, not every private helper or every external Java/Jackson class. It depicts current in-memory object relationships; saved JSON contains inventory, not historical `Sale` objects. The `0..*` on SaleItem reflects an in-progress sale; checkout rejects an empty list.
+**Notes:** This UML diagram presents the main classes and their relationships rather than every method or external dependency. The relationships represent the application's in-memory object structure. JSON persistence stores inventory data only, not historical sales transactions. A `Sale` may contain zero or more `SaleItem` objects while being constructed, but checkout requires at least one item.

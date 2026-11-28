@@ -20,9 +20,7 @@ import java.time.Clock;
 import java.util.Scanner;
 
 public class Main {
-
     public static void main(String[] args) throws IOException {
-
         Path dataFile = Path.of("data", "store.json");
         StoreRepository repository =
                 new JsonStoreRepository(dataFile);
@@ -75,7 +73,6 @@ public class Main {
         // Run a demo sale only when requested
         if (args.length > 0
                 && args[0].equalsIgnoreCase("demo-sale")) {
-
 
             LocalDate saleDate = LocalDate.now();
 
@@ -136,7 +133,6 @@ public class Main {
                 );
 
             } catch (IllegalStateException error) {
-
                 System.out.println(
                         "Checkout rejected: " + error.getMessage()
                 );
@@ -144,6 +140,7 @@ public class Main {
         }
 
         // Display the current stock
+        // sku - stock keeping unit
         System.out.println("Current inventory:");
 
         for (Product product : inventory.getAllProducts()) {

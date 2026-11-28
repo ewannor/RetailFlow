@@ -12,7 +12,7 @@ sequenceDiagram
     participant Strategy as DiscountStrategy
     participant Repo as StoreRepository
 
-    Operator->>UI: Select 5; add SKUs and quantities
+    Operator->>UI: Select 5 add SKUs and quantities
     UI->>Sale: new Sale(inventory, date, strategy)
     loop Each selected line
         UI->>Sale: addItem(sku, quantity)

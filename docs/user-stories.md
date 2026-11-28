@@ -2,11 +2,11 @@
 
 ## Problem statement and user
 
-A small retail shop needs to keep product records, check stock, avoid selling expired items, calculate a customer's bill, and retain inventory changes between program runs. The primary user is a **shop operator** using a single-terminal, console-based application. Currency is GHS. This describes the implemented `feature/submission-prep` application, not a planned full POS.
+A small retail shop needs to maintain product records, monitor stock levels, prevent the sale of expired products, calculate customer bills, and retain inventory changes between application sessions. RetailFlow addresses these needs through a console-based inventory and sales management system designed for a single shop operator. The application uses Ghanaian Cedis (GHS) and focuses on basic retail operations rather than providing a complete commercial point-of-sale system.
 
 ## Implemented stories
 
-| ID | Priority | User story | Acceptance criteria / implemented evidence |
+| ID     | Priority | User story | Acceptance criteria / implemented evidence |
 |---|---|---|---|
 | US-01 | Must | As an operator, I want to view all products so that I can see current stock. | Main menu option **1** lists SKU, name, price and quantity; perishable products show expiry date; empty inventory reports no products. |
 | US-02 | Must | As an operator, I want to search by SKU or name so that I can locate an item. | Option **2** matches SKU case-insensitively; otherwise performs a case-insensitive partial-name search. |
@@ -39,4 +39,6 @@ A small retail shop needs to keep product records, check stock, avoid selling ex
 | Persistence and malformed JSON | `JsonStoreRepositoryTest` |
 | Console menu options, input and save calls | `ConsoleMenuTest` |
 
-As verified on GitHub on 24 November 2026, these classes contain **41 `@Test` methods** in total (5 + 6 + 6 + 9 + 5 + 10). Execution results must be confirmed using `mvn clean test` on the submission commit; source inspection alone does not prove passing tests.
+The automated test suite consists of 41 JUnit test methods across six test classes. The tests cover inventory management, checkout operations, discount calculations, domain exceptions, JSON persistence, and console interactions.
+
+The automated test execution results and manual acceptance testing outcomes are documented in the [Verification and Test Plan](test-plan.md).

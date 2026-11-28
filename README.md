@@ -1,225 +1,119 @@
-
 # RetailFlow
 
-RetailFlow is a Java-based retail inventory and sales management
-system developed to demonstrate Object-Oriented Programming (OOP) princeples for the Programming 2 OOP assignment at the University of Pécs.
+RetailFlow is a Java-based retail inventory and sales management system developed to demonstrate Object-Oriented Programming (OOP) principles for the Programming 2 assignment at the University of Pécs. The project demonstrates how core Java concepts, design patterns, file handling, and automated testing can be applied to a practical retail management application.
+
+## Problem Statement
+
+Small retail businesses need to maintain accurate inventory records and process sales efficiently. However, manual inventory management can lead to stock discrepancies, overselling, and difficulties identifying expired products as well. 
+
+RetailFlow aims to address these challenges by providing a Java-based inventory and sales management system that allows a single operator to manage products, monitor stock levels, and process sales. 
 
 ## Technologies
-- Java 26
-- Maven
-- Jackson JSON Library
-- JUnit 5
-- IntelliJ IDEA
-- Git and GitHub
+
+The project uses the following technologies:
+
+- **Java 26** — Application development and OOP implementation.
+- **Maven** — Project management, dependency management, and build automation.
+- **Jackson JSON Library** — Serialization and deserialization of inventory data.
+- **JUnit 5** — Automated unit testing.
+- **IntelliJ IDEA** — Integrated Development Environment (IDE).
+- **Git and GitHub** — Version control and repository management.
+
 ## Project Architecture
+
+RetailFlow follows a modular, object-oriented design. The main components are organized into packages that separate product management, inventory operations, sales processing, and persistence.
 
 ### Domain Package
 
-Contains:
-- Product
-- RegularProduct
-- PerishableProduct
+**Main classes:**
 
-Demonstrates inheritance, abstraction, encapsulation,
-and polymorphism.
+- `Product`
+- `RegularProduct`
+- `PerishableProduct`
+
+This package defines the product model and its different product types.
+
+It demonstrates inheritance, abstraction, encapsulation, and polymorphism.
 
 ### Inventory Package
 
-Contains:
-- Inventory
+**Main class:**
 
-Manages products using collections and generics.
+- `Inventory`
+
+Manages the collection of products and provides operations for adding, searching, restocking, and sorting products.
+
+It demonstrates the use of Java collections, generics, and business-rule validation.
 
 ### Sales Package
 
-Contains:
-- Sale
-- SaleItem
+**Main classes:**
 
-Handles sales calculations, checkout validation,
-and stock deduction.
+- `Sale`
+- `SaleItem`
+
+Handles sales transactions, checkout calculations, stock validation, and stock deduction.
+
+It prevents transactions involving insufficient stock or expired products.
 
 ### Persistence Package
 
-Contains:
-- StoreRepository
-- JsonStoreRepository
+**Main components:**
 
-Implements the Repository Pattern for JSON-based
-inventory persistence using Jackson.
+- `StoreRepository`
+- `JsonStoreRepository`
 
-## JSON Storage
+Provides JSON-based inventory persistence using the Jackson library.
 
-Inventory is stored locally in:
-
-data/store.json
-
-The file contains:
-- Product type
-- SKU
-- Product name
-- Price
-- Quantity
-- Expiry date, where applicable
-
-The file is automatically created on first launch.
-
-The current implementation saves product and inventory
-data, including stock changes after successful sales.
-
-Permanent sales history is not yet implemented.
-
-## Running RetailFlow
-
-1. Clone the repository.
-2. Open the project in IntelliJ IDEA.
-3. Load the Maven project.
-4. Configure the project JDK.
-5. Run com.retailflow.Main.
-
-On first launch, starter inventory is created.
-
-Subsequent launches restore saved inventory from JSON.
-
-To run the demonstration checkout, set the program
-argument to:
-
-demo-sale
-
-After checkout, the updated inventory is saved.
-
-### Interactive Console Menu
-
-RetailFlow provides an interactive console interface.
-
-Run `com.retailflow.Main` without program arguments
-to open the main menu.
-
-Available operations:
-
-1. View all products
-2. Search by SKU or product name
-3. Add regular or perishable products
-4. Restock products
-5. Create and complete sales with optional discounts
-6. Sort products by price
-7. Exit
-
-Input is validated using the existing domain and
-business rules.
-
-Product additions, stock replenishments, and
-successful checkouts are saved to `data/store.json`.
-
-Discounts use the Strategy Pattern through
-DiscountStrategy and its implementations.
-
-### Demonstration Modes
-
-The previous program arguments remain supported:
-
-- `demo-sale`
-- `demo-sale discount10`
-
-The interactive menu is the default when no
-program arguments are provided.
-
-### Console Testing
-
-ConsoleMenuTest uses simulated input and an
-in-memory repository test double.
-
-Run the console tests:
-
-    mvn -Dtest=ConsoleMenuTest test
-
-Run all tests:
-
-    mvn clean test
-
-### Known Limitation
-
-The application saves inventory after successful
-business operations. A file-write failure can
-leave in-memory changes unsaved.
-
-Concurrent checkout and durable sales-history
-storage are not supported.
-
-## Automated Testing
-
-Run all tests:
-
-    mvn clean test
-
-Build the project:
-
-    mvn clean package
-
-The test suite covers:
-- Inventory operations
-- Duplicate SKU validation
-- Searching and sorting
-- Checkout calculations
-- Expiry validation
-- Insufficient stock
-- Repeated checkout prevention
-- JSON saving and loading
-- Corrupted data handling
+This package separates data storage operations from the application's business logic.
 
 ## Design Patterns
 
+RetailFlow implements the Repository and Strategy design patterns to improve code organization, maintainability, and extensibility.
+
 ### Repository Pattern
 
-StoreRepository defines the persistence operations.
+The Repository Pattern separates data storage operations from the rest of the application.
 
-JsonStoreRepository implements those operations using
-Jackson and local JSON file storage.
+- `StoreRepository` defines the persistence operations.
+- `JsonStoreRepository` implements these operations using Jackson and local JSON file storage.
 
-The design separates business logic from storage logic.
-
+This allows business logic to interact with a repository interface rather than depending directly on the JSON storage implementation.
 
 ### Strategy Pattern — Discount Calculation
 
-RetailFlow uses the Strategy Pattern to support
-interchangeable discount policies.
+RetailFlow uses the Strategy Pattern to support interchangeable discount policies.
 
-Participants:
-- DiscountStrategy: common discount interface
-- NoDiscountStrategy: calculates no discount
-- PercentageDiscountStrategy: applies a percentage
-- Sale: context class that uses the selected strategy
+**Participants:**
 
-The Sale class depends on the DiscountStrategy interface
-rather than implementing individual discount algorithms.
+- `DiscountStrategy` — Common interface defining discount calculation behavior.
+- `NoDiscountStrategy` — Applies no discount.
+- `PercentageDiscountStrategy` — Applies a percentage-based discount.
+- `Sale` — Context class that uses the selected discount strategy.
 
-By default, sales use NoDiscountStrategy to preserve
-their original behavior.
+The `Sale` class depends on the `DiscountStrategy` interface rather than implementing individual discount algorithms.
 
-A percentage-based strategy can be supplied through
-the Sale constructor.
+By default, sales use `NoDiscountStrategy` to preserve their original behavior. A percentage-based discount strategy can be supplied through the `Sale` constructor.
 
-This design supports the Open/Closed Principle because
-new discount policies can be added without modifying
-the existing Sale calculation logic.
+This approach supports the **Open/Closed Principle**, allowing new discount policies to be introduced without modifying the existing sales calculation logic.
 
-The strategy affects the amount payable, not the
-quantity deducted from inventory.
+Discounts affect the amount payable but do not change the quantities deducted from inventory.
 
-To demonstrate the two options in IntelliJ IDEA:
+## Design Documentation
 
-Normal checkout:
-demo-sale
+Additional documentation is available in the `docs` directory.
 
-Checkout with 10% discount:
-demo-sale discount10
+- [UML Class Diagram](docs/uml-class-diagram.md)
+- [Checkout Sequence Diagram](docs/checkout-sequence.md)
+- [User Stories and Acceptance Criteria](docs/user-stories.md)
+- [Design Decisions and Patterns](docs/design-decisions.md)
+- [Verification Plan](docs/test-plan.md)
 
-Discounted sales are not yet stored as permanent
-transaction records. JSON persistence currently
-stores the updated inventory.
-
+These documents describe the system's class relationships, checkout process, functional requirements, design decisions, and testing approach.
 
 ## OOP Concepts
+
+RetailFlow demonstrates the following Java and object-oriented programming concepts:
 
 - Classes and objects
 - Constructors
@@ -227,34 +121,232 @@ stores the updated inventory.
 - Inheritance
 - Abstraction
 - Polymorphism
-- Composition
-- Collections and generics
-- Exceptions
+- Composition and object relationships
 - Interfaces
-- Repository Pattern
+- Collections and generics
+- Exception handling and validation
+- Design patterns
 - File input/output
 - Automated testing
 
+These concepts are applied throughout the implementation of product management, inventory operations, sales processing, and persistence.
+
+## JSON Storage
+
+RetailFlow uses JSON files for local inventory persistence instead of a database.
+
+Inventory data is stored in:
+
+`data/store.json`
+
+Each product record contains information such as:
+
+- Product type
+- Stock Keeping Unit (SKU)
+- Product name
+- Price
+- Quantity
+- Expiry date, where applicable
+
+The file is automatically created when the application initializes its inventory for the first time.
+
+Subsequent application launches restore the saved product and inventory information.
+
+Changes resulting from product additions, restocking, and successful sales are saved to the JSON file.
+
+**Note:** The current implementation stores inventory information, including stock changes after sales. Permanent sales transaction history is not yet supported.
+
+## Running RetailFlow
+
+RetailFlow can be executed through IntelliJ IDEA or the command line using Maven.
+
+### Prerequisites
+
+Before running the application, ensure that the following are installed:
+
+- Java Development Kit (JDK) 26
+- Apache Maven
+- IntelliJ IDEA (recommended for development)
+
+### Running in IntelliJ IDEA
+
+1. Clone the RetailFlow repository from GitHub.
+2. Open the project in IntelliJ IDEA.
+3. Load or reload the Maven project.
+4. Configure the Project SDK to use JDK 26.
+5. Locate the `com.retailflow.Main` class.
+6. Run the `Main` class.
+
+When the application starts without program arguments, the interactive console menu is displayed.
+
+On the first launch, starter inventory is created. Subsequent launches restore inventory from the JSON file.
+
+### Build and Execute
+
+To build the project from the command line, navigate to the project root directory and run:
+
+```bash
+mvn clean package
+```
+
+To start the interactive console application:
+
+```bash
+mvn compile org.codehaus.mojo:exec-maven-plugin:3.7.0:java -Dexec.mainClass=com.retailflow.Main
+```
+
+This executes the `Main` class without program arguments and opens the interactive console menu.
+
+The Maven Exec plugin may need to download its dependencies during the first execution.
+
+### Interactive Console Menu
+
+RetailFlow provides the following menu options:
+
+1. View all products.
+2. Search products by SKU or product name.
+3. Add regular or perishable products.
+4. Restock existing products.
+5. Create and complete sales with optional discounts.
+6. Sort products by price.
+7. Exit the application.
+
+User input is validated using the application's business rules and exception-handling mechanisms.
+
+Product additions, stock replenishments, and successful checkouts update the stored inventory data.
+
+### Demonstration Modes
+
+RetailFlow also supports predefined checkout demonstrations through program arguments.
+
+**Normal checkout:**
+
+```text
+demo-sale
+```
+
+**Checkout with a 10% discount:**
+
+```text
+demo-sale discount10
+```
+
+These arguments can be configured in IntelliJ IDEA under the Run Configuration for the `Main` class.
+
+Alternatively, run the discounted checkout demonstration from the terminal:
+
+```bash
+mvn compile org.codehaus.mojo:exec-maven-plugin:3.7.0:java -Dexec.mainClass=com.retailflow.Main -Dexec.args="demo-sale discount10"
+```
+
+When no program arguments are provided, RetailFlow starts in interactive console mode.
+
+### Example Usage
+
+The following example demonstrates a sale with a percentage discount.
+
+1. Start RetailFlow and select menu option `5` to create a sale.
+2. Enter `10` when prompted for the discount percentage.
+3. Select product `RF001` and enter a quantity of `2`.
+4. Select product `RF002` and enter a quantity of `1`.
+5. Enter `done` to finish adding sale items.
+6. Enter `y` to confirm the checkout.
+
+With the original starter prices, the expected calculation is:
+
+| Description | Amount (GHS) |
+|---|---:|
+| Subtotal | 258.50 |
+| Discount (10%) | 25.85 |
+| **Final Total** | **232.65** |
+
+After successful checkout, the corresponding product quantities are deducted from inventory and the updated stock information is saved.
+
+Actual results depend on the current inventory, product prices, stock availability, and expiry dates.
+
+## Automated Testing
+
+RetailFlow uses JUnit 5 to verify the correctness of its business operations and application behavior.
+
+### Running All Tests
+
+To execute the complete test suite, run:
+
+```bash
+mvn clean test
+```
+
+Maven executes the available tests and reports their results.
+
+### Console Testing
+
+`ConsoleMenuTest` verifies the interactive console using simulated user input and an in-memory repository test double.
+
+To execute only the console tests, run:
+
+```bash
+mvn -Dtest=ConsoleMenuTest test
+```
+
+This allows console behavior to be tested without modifying the actual inventory JSON file.
+
+### Test Coverage
+
+The automated test suite covers:
+
+- Product and inventory operations
+- Duplicate SKU validation
+- Product searching and sorting
+- Sales and checkout calculations
+- Discount strategy behavior
+- Product expiry validation
+- Insufficient stock handling
+- Repeated checkout prevention
+- JSON saving and loading
+- Corrupted JSON data handling
+- Interactive console operations
+
+These tests help verify that the application follows its defined business rules and handles invalid operations appropriately.
+
 ## Project Milestones
 
-1. Product Model
-2. Product Types
-3. Inventory Management
-4. Sales and Checkout
-5. JSON Persistence, Testing and Documentation
+RetailFlow was developed through five milestones:
+
+1. **Product Model** — Creating the foundational product class and applying encapsulation.
+2. **Product Types** — Implementing inheritance, abstraction, and polymorphism.
+3. **Inventory Management** — Managing products with collections, generics, and validation.
+4. **Sales and Checkout** — Implementing transactions, sale items, and stock deduction.
+5. **JSON Persistence, Testing, and Documentation** — Adding file persistence, automated testing, design patterns, and project documentation.
+
+Each milestone builds upon the previous implementation and introduces additional Java programming concepts.
 
 ## Current Limitations
 
-- Console-based application
-- No graphical user interface
-- No database
-- No permanent sales transaction history
-- No multi-user checkout support
-- No transaction rollback after file-save failures
-- No authentication or external payments
+RetailFlow is an educational application and is not intended to serve as a complete commercial point-of-sale system.
 
-## Purpose
+The current implementation has the following limitations:
 
-RetailFlow is an educational Java OOP project that
-demonstrates how software engineering concepts can
-be applied to a retail management application.
+- The application uses a console-based interface and does not provide a graphical user interface.
+- Inventory is stored in a local JSON file rather than a database.
+- Permanent sales transaction history is not supported.
+- Multi-user access and concurrent checkout are not supported.
+- The system does not provide authentication or external payment integration.
+- Transaction rollback is not implemented for file-save failures.
+
+Although inventory changes are saved after successful business operations, a file-write failure may leave in-memory changes unsaved.
+
+These limitations identify areas for potential future development.
+
+## Contributors
+
+- **Emmanuel Wiafe Annor** — Project design, implementation, automated testing, and documentation.
+
+## Release and License
+
+RetailFlow is distributed under the **MIT License**.
+
+See the [LICENSE](LICENSE) file for the applicable terms and conditions.
+
+Project releases and release notes are available through the [GitHub Releases page](https://github.com/ewannor/RetailFlow/releases).
+
+This initial release is `v1.0.0`.
